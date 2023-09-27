@@ -7,7 +7,6 @@ from tools.dataset_converters import kitti_converter as kitti
 from tools.dataset_converters import lyft_converter as lyft_converter
 from tools.dataset_converters import nuscenes_converter as nuscenes_converter
 from tools.dataset_converters import semantickitti_converter
-from tools.dataset_converters import marine3d_converter as marine3d_converter
 from tools.dataset_converters.create_gt_database import (
     GTDatabaseCreater, create_groundtruth_database)
 from tools.dataset_converters.update_infos_to_v2 import update_pkl_infos
@@ -240,39 +239,6 @@ def semantickitti_data_prep(info_prefix, out_dir):
         info_prefix, out_dir)
 
 
-def marine3d_data_prep(root_path, info_prefix, version, out_dir):
-    """Prepare related data for base dataset with pointclouds
-    and annotations.
-
-    Related data consists of '.pkl' files recording basic infos,
-    3D annotations and grobaseundtruth database.
-
-    Args:
-        root_path (str): Path of dataset root.
-        info_prefix (str): The prefix of info filenames.
-        version (str): Dataset version.
-        out_dir (str): Output directory of the groundtruth database info.
-    """
-    marine3d_converter.create_marine3d_info_file(root_path, info_prefix)
-    
-    info_train_path = osp.join(out_dir, f'{info_prefix}_infos_train.pkl')
-    info_val_path = osp.join(out_dir, f'{info_prefix}_infos_val.pkl')
-    info_trainval_path = osp.join(out_dir, f'{info_prefix}_infos_trainval.pkl')
-    info_test_path = osp.join(out_dir, f'{info_prefix}_infos_test.pkl')
-    
-    update_pkl_infos('marine3d', out_dir=out_dir, pkl_path=info_train_path)
-    update_pkl_infos('marine3d', out_dir=out_dir, pkl_path=info_val_path)
-    update_pkl_infos('marine3d', out_dir=out_dir, pkl_path=info_trainval_path)
-    update_pkl_infos('marine3d', out_dir=out_dir, pkl_path=info_test_path)
-    create_groundtruth_database(
-        'Marine3dDataset',
-        root_path,
-        info_prefix,
-        f'{info_prefix}_infos_train.pkl',
-        relative_path=False,
-        with_mask=False)
-        
-        
 parser = argparse.ArgumentParser(description='Data converter arg parser')
 parser.add_argument('dataset', metavar='kitti', help='name of the dataset')
 parser.add_argument(
@@ -410,11 +376,5 @@ if __name__ == '__main__':
     elif args.dataset == 'semantickitti':
         semantickitti_data_prep(
             info_prefix=args.extra_tag, out_dir=args.out_dir)
-    elif args.dataset == 'marine3d':
-        marine3d_data_prep(
-            root_path=args.root_path,
-            info_prefix=args.extra_tag,
-            version=args.version,
-            out_dir=args.out_dir)
     else:
         raise NotImplementedError(f'Don\'t support {args.dataset} dataset.')
